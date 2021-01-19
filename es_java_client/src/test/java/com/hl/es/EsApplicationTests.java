@@ -51,6 +51,14 @@ class EsApplicationTests {
         esTrainOrderService.createTrainOrderDoc(trainOrder);
     }
 
+    //   更新文档数据
+    @Test
+    void update(){
+        Long id = 1L;
+        TrainOrder trainOrder = TrainOrder.builder().orderId(id).fromStationName("广州站").build();
+        esTrainOrderService.updateTrainOrderDoc(trainOrder);
+    }
+
     // 批量处理数据
     @Test
     void batchHandle(){

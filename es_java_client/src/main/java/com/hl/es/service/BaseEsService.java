@@ -23,10 +23,14 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.replication.ReplicationResponse;
+import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateRequestBuilder;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.engine.VersionConflictEngineException;
+import org.elasticsearch.index.get.GetResult;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryAction;
@@ -161,6 +165,67 @@ public abstract class BaseEsService<T> {
             e.printStackTrace();
         }
     }
+
+    /**
+     * 功能描述：根据对象更新指定文档数据
+     * @param t
+     */
+    public void updateDoc(T t) {
+        String id = getDocumentId(t);
+        String source = JSONFormat.toJSONString(t, DateUtil.yyyyMMdd_HHmmss_SSS);
+        updateDoc(id, source);
+    }
+
+    /**
+     * 功能描述：根据id和map更新文档数据
+     * @param id
+     * @param params
+     */
+    public void updateDoc(String id, Map<String, Object> params) {
+        String source = JSONFormat.toJSONString(params, DateUtil.yyyyMMdd_HHmmss_SSS);
+        updateDoc(id, source);
+    }
+
+    /**
+     * 功能描述：根据id和json字符串进行
+     * @param id
+     * @param source
+     */
+    private void updateDoc(String id, String source) {
+        if (StringUtils.isBlank(indexName)) {
+            throw new IllegalArgumentException("update doc, index can not be null");
+        }
+        try {
+            for (int i = 0; i < 3; i++) {
+                try {
+                    UpdateRequest updateRequest = new UpdateRequest();
+                    updateRequest.index(indexName);
+                    updateRequest.type(typeName);
+                    updateRequest.id(id);
+                    updateRequest.doc(source,XContentType.JSON);
+                    UpdateResponse updateResponse = esClient.update(updateRequest).get();
+                    if(updateResponse!=null){
+                        if(updateResponse.getResult()==DocWriteResponse.Result.UPDATED){
+                            log.info("index:"+indexName+"type:"+typeName+"id:"+id+"更新结果:成功更新");
+                        }
+                        if(updateResponse.getResult()==DocWriteResponse.Result.NOOP){
+                            log.info("index:"+indexName+"type:"+typeName+"id:"+id+"更新结果:更新成功，但是更新数据和原数据是一样的");
+                        }
+                    }
+                    break;
+                } catch (VersionConflictEngineException e) {
+                    log.error("更新es冲突,重试");
+                    if (i == 2) {
+                        throw new RuntimeException("更新es重试三次都冲突");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("更新es失败,id:" + id + ",source:" + source, e);
+            throw new RuntimeException(e);
+        }
+    }
+
 
     /**
      * 功能描述：bulk,批量添加对象列表到es数据库中

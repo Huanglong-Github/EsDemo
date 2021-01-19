@@ -49,4 +49,24 @@ public class DateUtil {
             }
         }
     }
+
+    /**
+     * 功能描述：得到格式化后的当前时间
+     * @return
+     */
+    public static String getCurrentTimeMillis() {
+        return getDate2Str("yyyy-MM-dd HH:mm:ss SSS", new Date());
+    }
+
+    /**
+     * 功能描述：将当前时间按指定格式进行格式化
+     * @param format
+     * @param date
+     * @return
+     */
+    public static String getDate2Str(String format, Date date) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
+        simpleDateFormat.applyPattern(format);
+        return simpleDateFormat.format(date);
+    }
 }

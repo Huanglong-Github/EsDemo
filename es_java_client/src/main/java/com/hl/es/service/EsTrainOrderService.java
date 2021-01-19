@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author: huanglong60
@@ -60,6 +61,14 @@ public class EsTrainOrderService extends BaseEsService<TrainOrder>{
         // 实际上，这个函数可以根据需要添加入参，并进行数据组装成trainOrder,
         // 然后再执行插入到ES数据库中的操作
         createDoc(trainOrder);
+    }
+
+
+    /**
+     * 功能描述：根据指定id和数据，更新指定ES 文档的数据
+     */
+    public void updateTrainOrderDoc(TrainOrder trainOrder)  {
+        updateDoc(trainOrder);
     }
 
     /**
@@ -277,7 +286,7 @@ public class EsTrainOrderService extends BaseEsService<TrainOrder>{
         MatchPhraseQueryBuilder matchPhraseQueryBuilder = QueryBuilders.matchPhraseQuery("fieldName", "value");
         MatchPhrasePrefixQueryBuilder matchPhrasePrefixQueryBuilder = QueryBuilders.matchPhrasePrefixQuery("fieldName", "value");
         PrefixQueryBuilder prefixQueryBuilder = QueryBuilders.prefixQuery("fieldName", "value");
-        WildcardQueryBuilder wildcardQueryBuilder = QueryBuilders.wildcardQuery("feildName", "value");
+        WildcardQueryBuilder wildcardQueryBuilder = QueryBuilders.wildcardQuery("fildName", "value");
     }
 
     public void matchQueryDemo(){
