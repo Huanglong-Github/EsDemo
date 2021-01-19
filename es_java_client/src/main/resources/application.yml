@@ -1,0 +1,9 @@
+server:
+  port: 8081
+
+es:
+  train:
+    cluster: elasticsearch
+    addresses: 192.168.197.129:9300
+#    userName:              //用户名
+#    password:              //密码
