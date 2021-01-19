@@ -159,8 +159,10 @@ public class EsTrainOrderService extends BaseEsService<TrainOrder>{
         esSortFieldBean.setOrder(SortOrder.DESC);
         List<EsSortFieldBean> sortFields = new ArrayList<>();
         sortFields.add(esSortFieldBean);
+
         queryHelper.setSortFields(sortFields);
         queryHelper.setQueryBuilder(matchAllQueryBuilder);
+
         EsResult<TrainOrder> trainOrderEsResult = searchPageByQueryBuilder(queryHelper, TrainOrder.class);
         return trainOrderEsResult;
     }
@@ -177,6 +179,17 @@ public class EsTrainOrderService extends BaseEsService<TrainOrder>{
         histogramAgg("created",queryHelper, DateHistogramInterval.YEAR);
     }
 
+
+    /**
+     * 功能描述：对某个字段进行范围统计
+     */
+    public void trainOrderRangeAgg(){
+        MatchAllQueryBuilder matchAllQueryBuilder = QueryBuilders.matchAllQuery();
+        EsQueryHelper queryHelper = new EsQueryHelper();
+        queryHelper.setQueryBuilder(matchAllQueryBuilder);
+        double[][] rangeArray = {{5},{5,10},{10,30},{30}};
+        rangeAgg("totalPayFee",queryHelper,rangeArray);
+    }
 
     /**
      * 功能描述：分组统计在指定查询条件下，符合查询条件的每个账号有多少订单

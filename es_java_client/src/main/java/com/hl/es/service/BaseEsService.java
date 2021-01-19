@@ -40,9 +40,13 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
 import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
+import org.elasticsearch.search.aggregations.bucket.range.Range;
+import org.elasticsearch.search.aggregations.bucket.range.RangeAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.range.RangeAggregator;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.Cardinality;
@@ -55,6 +59,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -548,6 +553,59 @@ public abstract class BaseEsService<T> {
         });
         return map;
     }
+
+
+
+    /**
+     * 功能描述：范围分组区间统计
+     * TODO 这里统一将聚合统计数据用map<String,String>返回，其实map的value会有不同的数据类型，如有需要，可在数据返回后进行类型转换
+     * @param column
+     * @param queryHelper
+     */
+    public Map<String,String> rangeAgg(String column, EsQueryHelper queryHelper,double[][] rangeArray) {
+        RangeAggregationBuilder rangeAggregationBuilder = AggregationBuilders.range("rangeAgg").field(column);
+        //设置查询范围分组
+        if(Objects.nonNull(rangeArray)){
+            if(rangeArray.length<2){
+                log.info("[indexName]"+indexName+"[typeName]"+"根据"+column+"进行范围维度统计的范围设置不正确！！！"+"time:"+DateUtil.getCurrentTimeMillis());
+                // TODO 这里可添加其他处理逻辑
+                return null;
+            }
+            for (int i=0;i<rangeArray.length;i++){
+                if(rangeArray[i].length==2){
+                    rangeAggregationBuilder.addRange(rangeArray[i][0],rangeArray[i][1]);
+                } else {
+                    if(i==0){
+                        rangeAggregationBuilder.addUnboundedTo(rangeArray[0][0]);
+                    } else {
+                        rangeAggregationBuilder.addUnboundedFrom(rangeArray[i][0]);
+                    }
+                }
+            }
+        }
+        SearchResponse response = esClient.prepareSearch(indexName)
+                .setTypes(typeName)
+                .setQuery(queryHelper.getQueryBuilder())
+                .addAggregation(rangeAggregationBuilder)
+                .get();
+        Map<String, String> map = new HashMap<>();
+        Aggregations aggregations = response.getAggregations();
+        Range range = aggregations.get("rangeAgg");
+        List<? extends Range.Bucket> buckets = range.getBuckets();
+        //遍历聚合结果
+        buckets.stream().forEach((bucket)->{
+            // 获取桶的Key值
+            String key = bucket.getKeyAsString();
+            // 获取文档总数
+            Long count = bucket.getDocCount();
+            map.put(key,count.toString());
+            log.info("[indexName]"+indexName+"[typeName]"+"根据"+column+"进行范围维度统计："+"key："+key+"docCount："+count);
+        });
+        return map;
+    }
+
+
+
 
 
     /**

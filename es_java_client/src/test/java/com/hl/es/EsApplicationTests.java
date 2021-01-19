@@ -9,12 +9,14 @@ import com.hl.es.util.JSONFormat;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.Client;
 import org.junit.jupiter.api.Test;
+import org.junit.platform.commons.util.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @SpringBootTest
 @Slf4j
@@ -133,19 +135,23 @@ class EsApplicationTests {
     @Test
     void aggTest(){
         //在时间维度进行聚合统计
-//        esTrainOrderService.trainOrderDateHistogramAgg();
+        //esTrainOrderService.trainOrderDateHistogramAgg();
 
         //terms 分组统计
-//        esTrainOrderService.trainOrderTermsAgg();
+        //esTrainOrderService.trainOrderTermsAgg();
 
         //去重统计
-//        esTrainOrderService.countAccountByDistinct();
+        //esTrainOrderService.countAccountByDistinct();
 
         //对trainOrder数据的totalPayFee字段进行各类统计
         //esTrainOrderService.trainOrderStat();
 
         //分页统计
-        esTrainOrderService.aggTrainOrderPage();
+        //esTrainOrderService.aggTrainOrderPage();
+
+
+        //range 范围统计
+        esTrainOrderService.trainOrderRangeAgg();
 
     }
 
@@ -156,5 +162,30 @@ class EsApplicationTests {
         esTrainOrderService.matchQueryDemo();
     }
 
+
+
+    @Test
+    public void test(){
+        double[][] rangeArray = {{0,5},{5}};
+//        double[][] rangeArray = {{5},{5,10},{10,30},{30}};
+
+//        double[][] rangeArray = {{30,100}};
+        if(Objects.nonNull(rangeArray)){
+            if(rangeArray.length<2){
+                return;
+            }
+            for (int i=0;i<rangeArray.length;i++){
+                if(rangeArray[i].length==2){
+                    System.out.println(rangeArray[i][0]+":"+rangeArray[i][1]);
+                } else {
+                    if(i==0){
+                        System.out.println(rangeArray[0][0]);
+                    } else {
+                        System.out.println(rangeArray[i][0]);
+                    }
+                }
+            }
+        }
+    }
 
 }
