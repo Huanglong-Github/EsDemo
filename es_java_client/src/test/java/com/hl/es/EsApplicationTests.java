@@ -159,8 +159,17 @@ class EsApplicationTests {
 
     @Test
     public void queryBuilderTest(){
-        esTrainOrderService.matchQueryDemo();
+        //单个queryBuilder测试
+     //   esTrainOrderService.matchQueryDemo();
+
+        //多个queryBuilder测试
+        esTrainOrderService.manyQueryDemo();
+
     }
+
+
+
+
 
 
 

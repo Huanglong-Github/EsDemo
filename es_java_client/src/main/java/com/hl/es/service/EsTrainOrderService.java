@@ -11,12 +11,15 @@ import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.Strings;
+import org.elasticsearch.common.io.stream.StreamInput;
+import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.filter.Filter;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.Avg;
@@ -136,7 +139,7 @@ public class EsTrainOrderService extends BaseEsService<TrainOrder>{
 
 
     /**
-     * 功能描述：查询指定文档并删除 同步方式
+     * 功能描述：查询指定文档并删除 异步方式
      */
     public void delTrainOrderByQueryAsyn(){
         List<QueryBuilder> queryBuilderList = new ArrayList<>();
@@ -302,6 +305,9 @@ public class EsTrainOrderService extends BaseEsService<TrainOrder>{
         WildcardQueryBuilder wildcardQueryBuilder = QueryBuilders.wildcardQuery("fildName", "value");
     }
 
+    /**
+     * 功能描述：matchQueryDemo简单测试
+     */
     public void matchQueryDemo(){
         MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery("fromStationName", "北京");
         EsQueryHelper esQueryHelper = new EsQueryHelper();
@@ -310,6 +316,86 @@ public class EsTrainOrderService extends BaseEsService<TrainOrder>{
         if(!trainOrderEsResult.getData().isEmpty()){
             for(TrainOrder trainOrder:trainOrderEsResult.getData()){
                 log.info("matchQueryDemo:"+trainOrder.toString());
+            }
+        }
+    }
+
+
+    /**
+     * GET train_order/_search
+     * {
+     *   "query": {
+     *     "bool": {
+     *       "should": [
+     *         {
+     *           "match": {
+     *             "fromStationName": "北京"
+     *           }
+     *         },
+     *         {
+     *           "exists": {
+     *             "field": "toStationName"
+     *           }
+     *         },
+     *         {
+     *           "fuzzy": {
+     *             "account": {
+     *               "value": "1837",
+     *               "boost": 1,
+     *               "fuzziness": 0.5
+     *             }
+     *           }
+     *         }
+     *       ],
+     *       "filter": {
+     *         "range": {
+     *           "created": {
+     *             "gte": "2001-01-01 08:29:00",
+     *             "lte": "2001-04-01 08:29:00"
+     *           }
+     *         }
+     *       },
+     *       "must": [
+     *         {
+     *           "match": {
+     *             "toStationName": "上海"
+     *           }
+     *         }
+     *       ]
+     *     }
+     *   }
+     * }
+     */
+
+    /**
+     * 功能描述：多个QueryBuilder组合在一起的进行查询的
+     */
+    public void manyQueryDemo(){
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+
+        MatchQueryBuilder matchQuery = QueryBuilders.matchQuery("fromStationName", "北京");
+
+        ExistsQueryBuilder existsQuery = QueryBuilders.existsQuery("toStationName");
+
+        FuzzyQueryBuilder fuzzyQuery = QueryBuilders.fuzzyQuery("account", "1837");
+        fuzzyQuery.boost(1).fuzziness();
+
+        RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery("created");
+        rangeQuery.gte("2001-01-01 08:29:00").lte("2001-04-01 08:29:00");
+
+        MatchQueryBuilder matchQuery1 = QueryBuilders.matchQuery("orderType", 3);
+
+        boolQueryBuilder.filter(rangeQuery);
+        boolQueryBuilder.should(existsQuery);
+        boolQueryBuilder.should(matchQuery);
+        boolQueryBuilder.must(matchQuery1);
+
+        EsQueryHelper esQueryHelper = new EsQueryHelper();
+        esQueryHelper.setQueryBuilder(boolQueryBuilder);
+        EsResult<TrainOrder> trainOrderEsResult = searchPageByQueryBuilder(esQueryHelper, TrainOrder.class);
+        if(!trainOrderEsResult.getData().isEmpty()){
+            for(TrainOrder trainOrder:trainOrderEsResult.getData()){
+                log.info("queryDemo:"+trainOrder.toString());
             }
         }
     }

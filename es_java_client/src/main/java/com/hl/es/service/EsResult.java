@@ -39,6 +39,10 @@ public class EsResult<T> {
         this.pageSize = pageSize;
     }
 
+    /**
+     * 功能描述：得到分页查询的起始位置
+     * @return
+     */
     public int getStartIndex() {
         return (pageIndex - 1) * pageSize;
     }

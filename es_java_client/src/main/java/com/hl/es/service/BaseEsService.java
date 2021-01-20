@@ -372,7 +372,7 @@ public abstract class BaseEsService<T> {
     }
 
     /**
-     * 根据文档的id数组得到文档数据集合
+     * 功能描述：根据文档的id数组得到文档数据集合
      * @param ids
      * @return
      */
@@ -395,7 +395,7 @@ public abstract class BaseEsService<T> {
     }
 
     /**
-     * 根据QueryBuilder查询分页,, queryHelper参数只使用排序及分页信息
+     * 功能描述：根据QueryBuilder查询分页,, queryHelper参数只使用排序及分页信息
      *
      * @param queryHelper  query helper
      * @param clazz        clazz
@@ -441,7 +441,7 @@ public abstract class BaseEsService<T> {
     }
 
     /**
-     * 查询指定文档并删除
+     * 功能描述：查询指定文档并删除
      * @param queryBuilderList
      */
     public void delByQuery(List<QueryBuilder> queryBuilderList){
@@ -461,7 +461,7 @@ public abstract class BaseEsService<T> {
     }
 
     /**
-     * 查询指定文档并删除  异步方式
+     * 功能描述：查询指定文档并删除  异步方式
      * @param queryBuilderList
      */
     public void delByQueryAsyn(List<QueryBuilder> queryBuilderList){
@@ -489,7 +489,7 @@ public abstract class BaseEsService<T> {
     }
 
     /**
-     * 组装排序查询条件
+     * 功能描述：组装排序查询条件
      *
      * @param queryHelper          query helper
      * @param searchRequestBuilder search request builder
@@ -503,7 +503,7 @@ public abstract class BaseEsService<T> {
     }
 
     /**
-     * 组装查询结果
+     * 功能描述；组装查询结果
      * @param result         result
      * @param searchResponse search response
      * @param clazz          clazz
@@ -599,7 +599,7 @@ public abstract class BaseEsService<T> {
             // 获取文档总数
             Long count = bucket.getDocCount();
             map.put(key,count.toString());
-            log.info("[indexName]"+indexName+"[typeName]"+"根据"+column+"进行范围维度统计："+"key："+key+"docCount："+count);
+            log.info("[indexName]"+indexName+"根据"+column+"进行范围维度统计："+"key："+key+"docCount："+count);
         });
         return map;
     }
@@ -691,7 +691,7 @@ public abstract class BaseEsService<T> {
     }
 
     /**
-     * 这里封装的很简陋，暂时没想到更好的封装方式
+     * 功能描述：子聚合统计查询，这里封装的很简陋，暂时没想到更好的封装方式
      * @param queryHelper
      * @param groupAggBuilder
      * @return
@@ -720,7 +720,7 @@ public abstract class BaseEsService<T> {
     }
 
     /**
-     * 将实体对象列表转换为hashMap
+     * 功能描述：将实体对象列表转换为hashMap
      * @param entities
      * @return
      */
